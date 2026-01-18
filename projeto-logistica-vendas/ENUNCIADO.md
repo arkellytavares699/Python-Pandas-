@@ -1,62 +1,66 @@
-🚚 Projeto: Otimização de Margens e Performance Logística (Hub Aveiro)
-Status do Projeto: Em Desenvolvimento 🛠️
+# 🚚 Projeto: Otimização de Margens e Performance Logística (Hub Aveiro)
 
-Responsável: Arquele Tavares (Data Science Specialist)
+> **Status do Projeto:** Em Desenvolvimento 🛠️  
+> **Responsável:** Arquele Tavares (Data Science Specialist)  
+> **Solicitante:** Direção de Operações (O "Chefe")
 
-Solicitante: Direção de Operações (O "Chefe")
+---
 
-📋 Cenário de Negócio (A Simulação)
-A nossa empresa centraliza a distribuição a partir do Hub de Aveiro. Atualmente, enfrentamos um problema crítico: o volume de vendas cresce, mas a margem de lucro está a diminuir. Suspeitamos que os custos de transporte e a ineficiência das transportadoras parceiras estão a "comer" o nosso lucro.
+## 📋 Cenário de Negócio
+A nossa empresa centraliza a distribuição a partir do **Hub de Aveiro**. Enfrentamos um desafio crítico: o volume de vendas cresce, mas a margem de lucro está a diminuir. Suspeitamos que os custos de transporte e a ineficiência das transportadoras parceiras estão a comprometer a rentabilidade.
 
-Os dados estão espalhados: as vendas estão no nosso servidor SQL (MariaDB), mas as três transportadoras com que trabalhamos enviam relatórios mensais em Excel com formatos completamente diferentes.
+Os dados estão fragmentados: as vendas residem num servidor **SQL (MariaDB)**, enquanto as três transportadoras parceiras enviam relatórios mensais em **Excel** com estruturas de dados inconsistentes.
 
-🎯 O Desafio do Chefe
-O Diretor de Operações exigiu respostas para as seguintes perguntas:
+### 🎯 O Desafio do "Chefe"
+O Diretor de Operações exige respostas baseadas em dados para as seguintes questões:
+1. **Unificação de Dados:** É possível consolidar 3 fontes externas de logística com a base interna de vendas?
+2. **Rastreio de Prejuízo:** Quais rotas (cidades) apresentam fretes superiores à margem da venda?
+3. **Auditoria de Performance:** Qual transportadora é a mais célere e qual apresenta maior índice de atrasos?
+4. **Métricas de Eficiência:** Qual o custo real por **KM** percorrido e por **KG** transportado?
 
-Visibilidade Total: Conseguimos unificar os dados de 3 transportadoras diferentes com a nossa base de vendas SQL?
+---
 
-Rastreio de Prejuízo: Quais são as rotas (Cidades) onde o frete é tão caro que a venda dá prejuízo?
+## 🏗️ Arquitetura da Solução (Pipeline ETL)
 
-Auditoria de Performance: Qual transportadora é a mais rápida e qual cumpre melhor os prazos de entrega?
+O projeto utiliza o fluxo **Extract, Transform, Load (ETL)** para processar a informação:
 
-Eficiência de Carga: Qual é o nosso custo real por quilómetro percorrido e por quilo transportado?
+1.  **Data Ingestion:** Extração de dados do MariaDB via `SQLAlchemy` e carregamento de arquivos flat (Excel).
+2.  **Data Harmonization:** Padronização de chaves primárias (`id_pedido`) e limpeza de tipos de dados.
+3.  **Intelligence Layer:** Criação de colunas calculadas: *Lucro Líquido*, *Custo/KM* e *Lead Time*.
+4.  **Business Insights:** Geração de relatórios de exceção e exportação para tomada de decisão.
 
-🏗️ Arquitetura da Solução
-Para resolver este problema, o projeto foi estruturado em 4 etapas de Engenharia e Ciência de Dados:
+---
 
-Data Ingestion (SQL + Pandas): * Importação da base de dados de vendas para o MariaDB.
+## 📊 Estrutura dos Dados
 
-Conexão via SQLAlchemy para extração automatizada.
+### Base de Vendas (SQL)
+| Coluna | Descrição |
+| :--- | :--- |
+| `id_pedido` | Identificador único da venda (PK) |
+| `cidade_destino` | Cidade de entrega |
+| `valor_venda` | Valor bruto da transação |
+| `peso_kg` | Peso físico da mercadoria |
+| `distancia_km` | Distância calculada a partir de Aveiro |
 
-Data Harmonization (ETL): * Padronização de nomes de colunas (IDs de pedidos inconsistentes).
+### Relatórios Logísticos (Excel)
+* **Transp. A:** Foco em envios rápidos (Coluna: `cod_envio`).
+* **Transp. B:** Foco em carga pesada (Coluna: `ID_Venda`).
+* **Transp. C:** Operação geral (Coluna: `id_pedido`).
 
-União de tabelas (concat) e cruzamento de dados (merge).
+---
 
-Intelligence Layer (Cálculos): * Criação de métricas de negócio: Lucro Líquido, Custo/KM e Lead Time (Dias de entrega).
+## 🛠️ Tecnologias Utilizadas
+* **Python 3.12**
+* **Pandas:** Motor de transformação de dados.
+* **SQLAlchemy:** Abstração de conexão com a Base de Dados.
+* **MariaDB/MySQL:** Armazenamento relacional das vendas.
 
-Business Insights: * Geração de relatórios de exceção (Alerta de Lucro Negativo).
+---
 
-📊 Estrutura dos Dados Fonte
-Vendas (SQL): id_pedido, data_venda, cidade_destino, categoria, valor_venda, peso_kg, distancia_km.
+## 📉 Resultados Esperados
+* Identificação de rotas com ROI negativo.
+* Ranking de eficiência por transportadora.
+* Otimização da escolha logística baseada no peso e distância.
 
-Transportadora A (Excel): Foco em envios rápidos, usa cod_envio.
-
-Transportadora B (Excel): Foco em grandes volumes, usa ID_Venda.
-
-Transportadora C (Excel): Operação geral, usa id_pedido.
-
-🛠️ Tecnologias Utilizadas
-Python 3.12
-
-Pandas (Tratamento e análise)
-
-SQLAlchemy (Ponte entre Python e SQL)
-
-MariaDB / MySQL (Armazenamento de dados de vendas)
-
-📈 Resultados Esperados
-Redução de custos logísticos através da escolha da transportadora certa por rota.
-
-Identificação de categorias de produtos que não suportam o custo de frete atual.
-
-Dashboard de performance de entrega para renegociação de contratos.
+---
+_Este projeto faz parte do portfólio de Gestão de Informação e Ciência de Dados (Nível 5) - IEFP._
