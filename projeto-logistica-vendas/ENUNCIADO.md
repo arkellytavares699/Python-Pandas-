@@ -1,120 +1,148 @@
-# 🚚 Projeto de Business Intelligence: Otimização de Margens e Performance Logística (Hub Aveiro)
+# 🚚 Projeto de Business Intelligence – Hub Aveiro
+## Otimização de Margens e Performance Logística
 
-> **Status do Projeto:** Em Desenvolvimento 🛠️  
-> **Responsável:** Arquele Tavares (Técnico Especialista em Gestão de Informação e Ciência de Dados)  
-> **Solicitante:** Direção de Operações (Hub Aveiro)
+**Status do Projeto:** Em desenvolvimento 🛠️  
+**Responsável:** Arquele Tavares  
+**Perfil:** Técnico Especialista em Gestão de Informação e Ciência de Dados (Nível 5 – IEFP)  
+**Solicitante:** Direção de Operações – Hub Aveiro
 
 ---
 
 ## 📋 Cenário de Negócio
 
-A empresa centraliza a distribuição de mercadorias a partir do **Hub de Aveiro**. Apesar do crescimento do volume de vendas, observa-se uma **redução contínua da margem de lucro**, sugerindo que **custos logísticos elevados e ineficiências nas transportadoras parceiras** estão a impactar a rentabilidade.  
+A empresa centraliza a distribuição de mercadorias a partir do **Hub de Aveiro**. Apesar do crescimento consistente do volume de vendas, observa-se uma **redução contínua da margem de lucro**, indicando que custos logísticos elevados e ineficiências operacionais nas transportadoras parceiras estão a impactar negativamente a rentabilidade.
 
-Os dados disponíveis estão **fragmentados e inconsistentes**:  
+Os dados disponíveis refletem um cenário realista e desafiante:
 
-- Vendas registradas no **MariaDB (SQL)**  
-- Relatórios mensais de **três transportadoras** enviados em **Excel**, cada um com colunas diferentes, valores ausentes e pequenas inconsistências  
+- 📦 **Vendas** simuladas com Python/Pandas, com possibilidade de integração futura em **MariaDB/MySQL** em **Linux (VM)**  
+- 📊 **Relatórios mensais de três transportadoras**, em ficheiros Excel, com:
+  - Colunas inconsistentes (`cod_envio`, `ID_Venda`, `id_pedido_c`)
+  - Valores ausentes
+  - Status de entrega variável
 
-O objetivo é consolidar estas informações num **pipeline de Business Intelligence**, permitindo análises estratégicas e decisões baseadas em dados.
+O objetivo é consolidar estas fontes num **pipeline de Business Intelligence**, garantindo qualidade dos dados e suporte à decisão estratégica.
 
 ---
 
 ## 🎯 Objetivos do Projeto
 
-1. **Integração e Harmonização de Dados**  
-   - Consolidar as bases de vendas e transportadoras, lidando com **nomes de colunas inconsistentes, valores ausentes e erros de digitação**.  
-   - Preparar os dados para análises avançadas e criação de KPIs.
+### 1️⃣ Integração e Harmonização de Dados
+- Consolidação da base de vendas com ficheiros Excel de transportadoras
+- Normalização de chaves primárias (`id_pedido`)
+- Padronização de nomes de colunas inconsistentes
+- Tratamento de valores nulos e pequenos erros simulados (`peso_kg` ausente)
+- Preparação dos dados para análises e visualizações
 
-2. **Cálculo de Indicadores Financeiros e Logísticos**  
-   - Lucro estimado e margem percentual por venda  
-   - Custo logístico por **km** e por **kg** transportado  
-   - Lead time e atraso de entrega  
-   - ROI por rota/cidade
+### 2️⃣ Cálculo de Indicadores Financeiros e Logísticos
+- 💰 **Lucro Estimado** = `valor_venda - custo_produto - custo_frete`
+- 📈 **Margem Percentual** = Lucro / `valor_venda` * 100
+- 🚛 **Custo Logístico por KM** e por KG transportado
+- ⏱️ **Lead Time de entrega**
+- ⚠️ **Indicador de atraso**
+- 📍 **ROI por rota e cidade de destino**
 
-3. **Análise de Performance das Transportadoras**  
-   - Ranking de eficiência baseado em velocidade de entrega e atrasos  
-   - Identificação de transportadoras com maior custo ou menor confiabilidade  
-   - Determinar quais rotas impactam negativamente a rentabilidade
+### 3️⃣ Análise de Performance das Transportadoras
+- Ranking por:
+  - Velocidade de entrega
+  - Taxa de atrasos (`status_a`, `status_b`, `status_c`)
+  - Custo médio logístico
+- Identificação de transportadoras com maior impacto negativo na margem
+- Análise de rotas críticas com ROI negativo
 
-4. **Suporte à Tomada de Decisão**  
-   - Relatórios visuais em **Power BI** ou Python, permitindo **simulações e otimizações logísticas**  
-   - Identificação de melhorias operacionais e estratégicas
+### 4️⃣ Suporte à Tomada de Decisão
+- Dashboards analíticos (Power BI e/ou Python)
+- Relatórios de exceção e alertas operacionais
+- Simulações de cenários logísticos:
+  - Alteração de transportadora
+  - Variação de distância, peso e custo
+- Apoio à otimização estratégica da rede logística
 
 ---
 
 ## 🏗️ Arquitetura da Solução (Pipeline ETL)
 
-O projeto segue o fluxo **Extract, Transform, Load (ETL)**:
+### 🔹 Extract (Extração)
+- Leitura de ficheiros Excel das transportadoras com Pandas
+- Criação da tabela de vendas simulada via Python
+- Possibilidade de extração futura de **MariaDB/MySQL** alojada em Linux (VM)
 
-1. **Data Ingestion**  
-   - Extração de dados da base SQL (MariaDB)  
-   - Carregamento de arquivos Excel das transportadoras  
+### 🔹 Transform (Transformação)
+- Harmonização das chaves primárias (`id_pedido`)
+- Normalização de colunas inconsistentes
+- Limpeza e validação de dados (valores ausentes e pequenos erros)
+- Criação de colunas calculadas:
+  - `LucroEstimado`
+  - `MargemPercent`
+  - `CustoPorKM`
+  - `CustoPorKG`
+  - `LeadTime`
+  - `Atrasado`
 
-2. **Data Harmonization**  
-   - Padronização de chaves primárias (`id_pedido`)  
-   - Normalização de colunas com nomes inconsistentes  
-   - Tratamento de valores ausentes e correção de erros de digitação
+### 🔹 Load (Carregamento)
+- Escrita dos dados tratados em Excel e/ou base MariaDB
+- Preparação da camada analítica para BI
 
-3. **Intelligence Layer**  
-   - Criação de colunas calculadas:  
-     - `LucroEstimado`  
-     - `MargemPercent`  
-     - `CustoPorKM` e `CustoPorKG`  
-     - `LeadTime` e indicador `Atrasado`  
+---
 
-4. **Business Insights**  
-   - Dashboards e relatórios de exceção  
-   - Rankings de transportadoras e rotas  
-   - Identificação de oportunidades de otimização de custos
+## 🧠 Camada de Inteligência (Intelligence Layer)
+- Métricas agregadas por:
+  - Transportadora
+  - Cidade / Rota
+  - Categoria de produto
+  - Período temporal
+- KPIs estratégicos de rentabilidade e eficiência
+- Identificação automática de outliers logísticos
 
 ---
 
 ## 📊 Estrutura das Tabelas
 
-### Base de Vendas (SQL)
+### 📁 Base de Vendas (simulada em Python)
 | Coluna | Descrição |
-| :--- | :--- |
-| `ID_Pedido` | Identificador único da venda (PK) |
-| `DataVenda` | Data da transação |
-| `CidadeDestino` | Cidade de entrega |
-| `ValorVenda` | Valor bruto da venda |
-| `PesoKG` | Peso da mercadoria |
-| `DistanciaKM` | Distância calculada a partir de Aveiro |
-| `ArmazemOrigem` | Local de origem (fixo: Aveiro) |
-| `TipoFrete` | Transportadora associada |
-| `StatusEntrega` | Estado da entrega (Entregue, Em trânsito, Atrasado, etc.) |
-| `DataPrevEntrega` | Data prevista de entrega |
-| `LucroEstimado` | Valor estimado de lucro |
-| `MargemPercent` | Margem percentual da venda |
+|--------|-----------|
+| id_pedido | Identificador único da venda |
+| data_venda | Data da transação |
+| cidade_destino | Cidade de entrega |
+| categoria | Tipo de produto |
+| valor_venda | Valor bruto da venda |
+| peso_kg | Peso da mercadoria (alguns nulos) |
+| custo_produto | Custo do produto |
+| distancia_km | Distância a partir de Aveiro |
+| armazem_origem | Origem (fixo: Aveiro) |
 
-### Relatórios Logísticos (Excel)
-| Transportadora | Coluna de ID | Observações |
-| :--- | :--- | :--- |
-| **Rápida A** | `cod_envio` | Envio rápido, baixa margem de erro |
-| **Pesada B** | `ID_Venda` | Carga pesada, prazo maior |
-| **Geral C** | `id_pedido` | Operação geral, status variável, atrasos simulados |
+### 📁 Relatórios Logísticos (Excel)
+| Transportadora | Coluna ID | Custo | Prazo | Status |
+|----------------|-----------|-------|-------|-------|
+| Rápida A | cod_envio | custo_frete_a | dias_entrega_a | status_a |
+| Pesada B | ID_Venda | frete_b | prazo_b | status_b |
+| Geral C | id_pedido_c | custo_envio_c | dias_c | status_c |
 
-> **Observação:** As colunas podem apresentar inconsistências de nomes, valores ausentes ou erros de digitação, simulando a realidade de operações logísticas.
+> ⚠️ As colunas apresentam inconsistências e valores ausentes propositais para simular cenários reais de negócio.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
-- **Python 3.12**  
-- **Pandas:** Manipulação e tratamento de dados  
-- **SQLAlchemy:** Conexão e extração de dados do MariaDB  
-- **MariaDB/MySQL:** Base relacional de vendas  
-- **Excel:** Relatórios das transportadoras  
+- 🐍 **Python 3.12** – Criação de dados e ETL
+- 📊 **Pandas** – Manipulação e tratamento de dados
+- 🗄️ **Excel** – Relatórios logísticos externos
+- 🔗 **SQLAlchemy / MariaDB** – Futuro carregamento para base relacional Linux (VM)
+- 🐧 **Linux (VM)** – Ambiente de dados e serviços
+- 🌐 **Apache** – Demonstração de serviços e infraestrutura
 
 ---
 
 ## 📉 Resultados Esperados
-- Consolidação das 4 fontes de dados em **dataset único e limpo**  
-- Identificação de **rotas com ROI negativo**  
-- Ranking detalhado de eficiência por transportadora  
-- Simulações de **cenários logísticos** considerando peso, distância e custo  
-- Dashboards para apoio à tomada de decisão  
+- Consolidação de **4 fontes de dados** num dataset único e limpo
+- Identificação clara de **rotas com ROI negativo**
+- Ranking detalhado de eficiência por transportadora
+- Simulações logísticas baseadas em custo, peso, distância e categoria
+- Dashboards analíticos para suporte à decisão
+- Demonstração prática de competências em:
+  - Business Intelligence
+  - Engenharia de Dados
+  - Linux e bases de dados
 
 ---
 
-> _Este projeto faz parte do portfólio de Gestão de Informação e Ciência de Dados (Nível 5) - IEFP._
+📌 *Projeto desenvolvido para fins académicos e de portfólio no âmbito do Curso Nível 5 – Gestão de Informação e Ciência de Dados (IEFP).*
 
