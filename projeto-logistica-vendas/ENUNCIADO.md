@@ -1,162 +1,141 @@
-# 🚚 Projeto de Business Intelligence – Hub Aveiro
-## Otimização de Margens e Performance Logística
+# 🚚 Hub Aveiro – BI & Logística
 
-**Status do Projeto:** Em desenvolvimento 🛠️  
-**Responsável:** Arquele Tavares  
-**Solicitante:** Direção de Operações – Hub Aveiro
+## Descrição do Projeto
 
----
+Este projeto simula um **pipeline completo de Business Intelligence** aplicado à logística de um hub central em Aveiro. Ele integra dados de vendas, transportadoras e métricas logísticas para análise de desempenho e tomada de decisão estratégica.
 
-## 📋 Cenário do Projeto
-
-A empresa centraliza a distribuição de mercadorias a partir do Hub de Aveiro. Apesar do aumento das vendas, foram identificados:
-
-- Custos logísticos elevados que afetam a margem de lucro;
-- Atrasos em entregas que impactam a satisfação do cliente;
-- Fragmentação de dados entre várias transportadoras e a base de vendas interna.
-
-Para responder a estes desafios, o projeto integra dados da **base de vendas (MariaDB/Linux)** com os **relatórios Excel das três transportadoras**, criando um dataset único e consistente para análise em BI.
+O foco principal é:
+- Otimização de custos logísticos;
+- Avaliação de performance das transportadoras;
+- Análise de margem de lucro por produto, rota e categoria;
+- Preparação de dados para dashboards em **Power BI**.
 
 ---
 
-## 🎯 Objetivos do Projeto
+## 🎯 Objetivos da Análise
 
-1. **Receção e Tratamento dos Dados**
-   - Ler os ficheiros Excel das três transportadoras;
-   - Corrigir nomes de colunas inconsistentes (`cod_envio`, `ID_Venda`, `id_pedido_c`);
-   - Tratar valores nulos e inconsistências (`peso_kg`, `custo_frete`);
-   - Preparar os dados para integração com a tabela de vendas.
+1. **Análise de Vendas e Custos**
+   - Calcular lucro estimado por pedido: `LucroEstimado = valor_venda - custo_produto - custo_frete`.
+   - Determinar margem percentual de cada venda: `(LucroEstimado / valor_venda) * 100`.
+   - Identificar categorias de produtos mais rentáveis.
 
-2. **Extração da Tabela de Vendas**
-   - Conexão à base MariaDB em Linux usando Python/SQLAlchemy;
-   - Extração da tabela de vendas;
-   - Limpeza e validação de dados: valores nulos, tipos corretos, consistência de chaves primárias.
+2. **Avaliação Logística**
+   - Medir **eficiência das transportadoras**: custo médio por pedido, atrasos e SLA.
+   - Analisar **custo por km** e **custo por kg**: `CustoPorKM = custo_frete / distancia_km`, `CustoPorKG = custo_frete / peso_kg`.
+   - Determinar lead time real vs. previsto e status de entrega.
 
-3. **Integração e Consolidação**
-   - Merge das tabelas de transportadoras com a tabela de vendas pelo `id_pedido`;
-   - Inclusão de colunas essenciais na tabela final:
-     - `transportadora` – qual empresa vai enviar cada pedido;
-     - `data_prevista_entrega` – data calculada a partir do SLA;
-     - `data_entrega` – data real considerando atrasos;
-     - `prazo_entrega_dias` – SLA da transportadora;
-     - `status_prazo` – indicador “No prazo” ou “Atrasado”.
-
-4. **Criação de Colunas Calculadas (Indicadores de BI)**
-   - **Lucro Estimado:** `valor_venda - custo_produto - custo_frete`;
-   - **Margem Percentual:** `(LucroEstimado / valor_venda) * 100`;
-   - **Custo Logístico por KM:** `custo_frete / distancia_km`;
-   - **Custo Logístico por KG:** `custo_frete / peso_kg`;
-   - **Lead Time:** diferença entre `data_venda` e `data_entrega`;
-   - **Status de entrega:** identificação de atrasos.
-
-5. **Preparação Final para BI**
-   - Dataset final limpo e enriquecido com métricas;
-   - Exportação para MariaDB/Linux para consulta direta em Power BI;
-   - Estrutura pronta para criação de dashboards e KPIs estratégicos.
+3. **Simulações Estratégicas**
+   - Comparar diferentes transportadoras para cada rota.
+   - Avaliar impacto de variações de peso, distância ou custo no lucro.
+   - Identificar rotas com ROI negativo para decisões de melhoria.
 
 ---
 
-## 🏗️ Fluxo do Projeto (Pipeline ETL)
+## 🗂️ Estrutura de Dados
 
-### 1️⃣ Extract (Extração)
-- Carregamento das 3 tabelas de transportadoras em Excel;
-- Conexão à base MariaDB/Linux e extração da tabela de vendas.
+### 1️⃣ Base de Vendas (MariaDB/Linux)
 
-### 2️⃣ Transform (Tratamento e Harmonização)
-- Normalização de nomes de colunas e chaves primárias;
-- Tratamento de valores ausentes (`peso_kg` preenchido com média por categoria);
-- Conversão de tipos de dados corretos (datas, numéricos);
-- Cálculo de colunas derivadas (`LucroEstimado`, `MargemPercent`, `CustoPorKM`, `CustoPorKG`, `LeadTime`, `status_prazo`).
-
-### 3️⃣ Load (Carregamento)
-- Merge das tabelas de vendas e transportadoras;
-- Exportação da tabela final para MariaDB/Linux;
-- Disponibilização para análise em Power BI.
-
----
-
-## 📊 Estrutura das Tabelas
-
-### Base de Vendas (MariaDB/Linux)
 | Coluna | Descrição |
 |--------|-----------|
-| id_pedido | Identificador único da venda |
+| id_pedido | Identificador único do pedido |
 | data_venda | Data da transação |
 | cidade_destino | Cidade de entrega |
 | categoria | Tipo de produto |
-| valor_venda | Valor bruto da venda |
-| peso_kg | Peso da mercadoria (preenchido após tratamento) |
+| valor_venda | Valor da venda |
+| peso_kg | Peso do produto (tratado e preenchido) |
 | custo_produto | Custo do produto |
-| distancia_km | Distância desde Aveiro |
-| armazem_origem | Origem fixa: Aveiro |
+| distancia_km | Distância desde o armazém de Aveiro |
+| armazem_origem | Origem da mercadoria (Aveiro) |
 
-### Tabelas das Transportadoras (Excel)
-| Transportadora | Coluna ID | Custo | Prazo | Status |
-|----------------|-----------|-------|-------|-------|
+### 2️⃣ Transportadoras (Excel)
+
+| Transportadora | Coluna ID | Custo | Prazo (SLA) | Status |
+|----------------|-----------|-------|-------------|--------|
 | Rápida A | cod_envio | custo_frete_a | dias_entrega_a | status_a |
 | Pesada B | ID_Venda | frete_b | prazo_b | status_b |
 | Geral C | id_pedido_c | custo_envio_c | dias_c | status_c |
 
-> Estas tabelas apresentam pequenas inconsistências, intencionais para simular desafios reais de integração de dados.
+> As tabelas podem conter inconsistências intencionais para simular desafios reais de integração.
 
-### Tabela Final Consolidada
+### 3️⃣ Tabela Consolidada Final
+
 | Coluna | Descrição |
 |--------|-----------|
-| id_pedido | Identificador único da venda |
+| id_pedido | Identificador do pedido |
 | data_venda | Data da transação |
 | cidade_destino | Cidade de entrega |
 | categoria | Tipo de produto |
-| valor_venda | Valor bruto da venda |
-| peso_kg | Peso da mercadoria (valores nulos preenchidos por média) |
+| valor_venda | Valor da venda |
+| peso_kg | Peso do produto |
 | custo_produto | Custo do produto |
 | custo_frete | Custo logístico da transportadora |
-| transportadora | Nome da transportadora responsável pelo envio |
+| transportadora | Nome da transportadora responsável |
 | prazo_entrega_dias | SLA da transportadora |
-| data_prevista_entrega | Data prevista calculada a partir do SLA |
-| data_entrega | Data real de entrega (considerando atrasos) |
-| status_prazo | Indicador “No prazo” ou “Atrasado” |
+| data_prevista_entrega | Data calculada a partir do SLA |
+| data_entrega | Data real de entrega |
+| status_prazo | No prazo / Atrasado |
 | distancia_km | Distância desde Aveiro |
-| armazem_origem | Origem fixa: Aveiro |
-| LucroEstimado | Valor do lucro por venda |
-| MargemPercent | Percentual de margem da venda |
+| armazem_origem | Origem (Aveiro) |
+| LucroEstimado | Valor do lucro por pedido |
+| MargemPercent | Percentual de margem |
 | CustoPorKM | Custo por quilómetro transportado |
 | CustoPorKG | Custo por quilograma transportado |
-| LeadTime | Dias totais até a entrega |
+| LeadTime | Dias até entrega real |
 
 ---
 
-## 🧠 Métricas e KPIs
-- Ranking de transportadoras por eficiência (velocidade, atrasos, custo médio);
-- Identificação de rotas com ROI negativo;
-- Análise de categorias mais rentáveis;
-- Simulações de cenários logísticos para decisões estratégicas:
-  - Alterar transportadora
-  - Variar peso ou distância
-  - Avaliar impacto no lucro e margem
+## 🔄 Fluxo do Projeto (Pipeline ETL)
+
+1. **Extract (Extração)**
+   - Importação dos ficheiros Excel das transportadoras.
+   - Extração da tabela de vendas do MariaDB/Linux.
+
+2. **Transform (Tratamento e Enriquecimento)**
+   - Limpeza de dados: valores nulos, tipos corretos, nomes de colunas consistentes.
+   - Merge das transportadoras com a tabela de vendas pelo `id_pedido`.
+   - Criação de métricas derivadas para análise de BI.
+
+3. **Load (Carregamento)**
+   - Exportação do dataset final para MariaDB/Linux.
+   - Disponibilização para **Power BI** através de conexão direta com o servidor.
+
+---
+
+## 📊 KPIs e Métricas Principais
+
+- **Lucro estimado** e **margem percentual** por pedido, categoria e transportadora.
+- **Custo logístico por km** e **por kg**.
+- **Lead time médio** vs. SLA e atrasos.
+- Ranking de transportadoras por eficiência e custo.
+- Identificação de rotas críticas e produtos com baixa rentabilidade.
+- Simulação de cenários para decisões estratégicas.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
-- **Python 3.12** – Criação e manipulação de dados, ETL
-- **Pandas** – Tratamento, limpeza e transformação de dados
-- **Excel** – Receção de relatórios das transportadoras
-- **SQLAlchemy / MariaDB** – Extração e carregamento de dados em Linux
-- **Power BI** – Visualização e análise de KPIs estratégicos
-- **Linux (VM)** – Ambiente de base de dados e scripts
-- **Apache** – Suporte à infraestrutura de dados
+
+- **Python 3.12** – Manipulação e tratamento de dados.
+- **Pandas** – Limpeza, transformação e análise.
+- **MariaDB/Linux** – Base de dados central.
+- **SQLAlchemy** – Conexão e ETL em Python.
+- **Excel** – Receção de relatórios das transportadoras.
+- **Power BI** – Criação de dashboards e análise visual.
+- **Linux (VM)** – Ambiente de execução do pipeline.
+- **Apache** – Suporte à infraestrutura de dados.
 
 ---
 
-## 📉 Resultados Esperados
-- Consolidação de **4 fontes de dados** num dataset único e limpo
-- Identificação clara de **rotas e transportadoras críticas**
-- Dashboards detalhados com métricas de eficiência e rentabilidade
+## 🎯 Resultados Esperados
+
+- Dataset consolidado e limpo, pronto para análise em Power BI.
+- Insights claros sobre **margens, custos logísticos e eficiência das transportadoras**.
+- Dashboards estratégicos para tomada de decisão baseada em dados.
 - Demonstração prática de competências em:
-  - Business Intelligence
-  - Engenharia de Dados
-  - SQL e Linux
-  - Preparação de dados para análise em Power BI
+  - **Business Intelligence**
+  - **Engenharia de Dados**
+  - **SQL e Linux**
+  - **Preparação de dados para análise visual**
 
 ---
 
-📌 *Este projeto reflete a execução completa de um pipeline de BI corporativo, desde a receção de dados até à análise e visualização de métricas estratégicas.*
+📌 *Este projeto representa um pipeline completo de BI corporativo, desde extração e tratamento de dados até análise estratégica de logística e performance de vendas.*
