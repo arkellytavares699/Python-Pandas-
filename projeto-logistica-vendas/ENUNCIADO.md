@@ -1,141 +1,101 @@
-# 🚚 Hub Aveiro – BI & Logística
+# 🌍 COVID-19 Global Data Analysis Pipeline
 
-## Descrição do Projeto
+## 🔹 Descrição do Projeto
+Este projeto tem como objetivo construir um **pipeline completo de Business Intelligence (BI) aplicado a dados globais de COVID-19**. Os dados são coletados de fontes oficiais, tratados no Python, armazenados em uma base SQL em Linux e disponibilizados em dashboards interativos no Power BI.  
 
-Este projeto simula um **pipeline completo de Business Intelligence** aplicado à logística de um hub central em Aveiro. Ele integra dados de vendas, transportadoras e métricas logísticas para análise de desempenho e tomada de decisão estratégica.
-
-O foco principal é:
-- Otimização de custos logísticos;
-- Avaliação de performance das transportadoras;
-- Análise de margem de lucro por produto, rota e categoria;
-- Preparação de dados para dashboards em **Power BI**.
+O foco principal é transformar dados brutos em **insights estratégicos**, permitindo análises de evolução de casos e mortes, tendências por país e continente, além de métricas normalizadas por população.
 
 ---
 
-## 🎯 Objetivos da Análise
-
-1. **Análise de Vendas e Custos**
-   - Calcular lucro estimado por pedido: `LucroEstimado = valor_venda - custo_produto - custo_frete`.
-   - Determinar margem percentual de cada venda: `(LucroEstimado / valor_venda) * 100`.
-   - Identificar categorias de produtos mais rentáveis.
-
-2. **Avaliação Logística**
-   - Medir **eficiência das transportadoras**: custo médio por pedido, atrasos e SLA.
-   - Analisar **custo por km** e **custo por kg**: `CustoPorKM = custo_frete / distancia_km`, `CustoPorKG = custo_frete / peso_kg`.
-   - Determinar lead time real vs. previsto e status de entrega.
-
-3. **Simulações Estratégicas**
-   - Comparar diferentes transportadoras para cada rota.
-   - Avaliar impacto de variações de peso, distância ou custo no lucro.
-   - Identificar rotas com ROI negativo para decisões de melhoria.
+## 🛑 Problema
+A pandemia de COVID-19 gerou um grande volume de dados diários, vindos de múltiplas fontes globais, muitas vezes **incompletos ou inconsistentes**.  
+Os desafios principais são:  
+- Dados diários com diferentes formatos e códigos de países  
+- Valores nulos ou inconsistentes na população ou nos casos reportados  
+- Necessidade de consolidar os dados em **uma única base confiável** para análise  
+- Preparação para dashboards que permitam insights visuais rápidos  
 
 ---
 
-## 🗂️ Estrutura de Dados
-
-### 1️⃣ Base de Vendas (MariaDB/Linux)
-
-| Coluna | Descrição |
-|--------|-----------|
-| id_pedido | Identificador único do pedido |
-| data_venda | Data da transação |
-| cidade_destino | Cidade de entrega |
-| categoria | Tipo de produto |
-| valor_venda | Valor da venda |
-| peso_kg | Peso do produto (tratado e preenchido) |
-| custo_produto | Custo do produto |
-| distancia_km | Distância desde o armazém de Aveiro |
-| armazem_origem | Origem da mercadoria (Aveiro) |
-
-### 2️⃣ Transportadoras (Excel)
-
-| Transportadora | Coluna ID | Custo | Prazo (SLA) | Status |
-|----------------|-----------|-------|-------------|--------|
-| Rápida A | cod_envio | custo_frete_a | dias_entrega_a | status_a |
-| Pesada B | ID_Venda | frete_b | prazo_b | status_b |
-| Geral C | id_pedido_c | custo_envio_c | dias_c | status_c |
-
-> As tabelas podem conter inconsistências intencionais para simular desafios reais de integração.
-
-### 3️⃣ Tabela Consolidada Final
-
-| Coluna | Descrição |
-|--------|-----------|
-| id_pedido | Identificador do pedido |
-| data_venda | Data da transação |
-| cidade_destino | Cidade de entrega |
-| categoria | Tipo de produto |
-| valor_venda | Valor da venda |
-| peso_kg | Peso do produto |
-| custo_produto | Custo do produto |
-| custo_frete | Custo logístico da transportadora |
-| transportadora | Nome da transportadora responsável |
-| prazo_entrega_dias | SLA da transportadora |
-| data_prevista_entrega | Data calculada a partir do SLA |
-| data_entrega | Data real de entrega |
-| status_prazo | No prazo / Atrasado |
-| distancia_km | Distância desde Aveiro |
-| armazem_origem | Origem (Aveiro) |
-| LucroEstimado | Valor do lucro por pedido |
-| MargemPercent | Percentual de margem |
-| CustoPorKM | Custo por quilómetro transportado |
-| CustoPorKG | Custo por quilograma transportado |
-| LeadTime | Dias até entrega real |
+## 🎯 Objetivos
+1. Extrair dados globais oficiais de COVID-19 (ECDC)  
+2. Tratar e limpar os dados no Python usando Pandas  
+3. Criar métricas derivadas relevantes:  
+   - Casos e mortes acumuladas  
+   - Casos ativos  
+   - Taxa de mortalidade  
+   - Casos por 100.000 habitantes  
+4. Armazenar os dados tratados em **MariaDB/Linux**  
+5. Gerar dashboards interativos no Power BI com métricas globais e por continente/país  
 
 ---
 
-## 🔄 Fluxo do Projeto (Pipeline ETL)
+## 🧰 Metodologia / Pipeline ETL
 
-1. **Extract (Extração)**
-   - Importação dos ficheiros Excel das transportadoras.
-   - Extração da tabela de vendas do MariaDB/Linux.
+### 1️⃣ Extract – Extração
+- Fonte: [ECDC](https://pandemicdatalake.blob.core.windows.net/public/curated/covid-19/ecdc_cases/latest/ecdc_cases.csv)  
+- CSV global com colunas: `date_rep, cases, deaths, countries_and_territories, country_territory_code, pop_data_2018, continent_exp`  
+- Dados carregados no Pandas para tratamento inicial  
 
-2. **Transform (Tratamento e Enriquecimento)**
-   - Limpeza de dados: valores nulos, tipos corretos, nomes de colunas consistentes.
-   - Merge das transportadoras com a tabela de vendas pelo `id_pedido`.
-   - Criação de métricas derivadas para análise de BI.
+### 2️⃣ Transform – Transformação
+- Limpeza de colunas desnecessárias (`day`, `month`, `year`, `geo_id`, `load_date`, `iso_country`, `daterep`)  
+- Conversão de datas para tipo `datetime`  
+- Preenchimento de valores nulos na população (`NaN`)  
+- Criação de métricas derivadas:  
+  - **Casos acumulados** por país  
+  - **Mortes acumuladas**  
+  - **Casos por 100.000 habitantes**  
+  - **Taxa de mortalidade**  
+- Filtragem de países ou continentes para análises específicas  
 
-3. **Load (Carregamento)**
-   - Exportação do dataset final para MariaDB/Linux.
-   - Disponibilização para **Power BI** através de conexão direta com o servidor.
+### 3️⃣ Load – Carregamento
+- Base de dados: **MariaDB no Linux**  
+- Criação de tabela `covid_global_data`  
+- Inserção do DataFrame Pandas tratado na base SQL  
+- Garantia de integridade e padronização de tipos  
 
----
-
-## 📊 KPIs e Métricas Principais
-
-- **Lucro estimado** e **margem percentual** por pedido, categoria e transportadora.
-- **Custo logístico por km** e **por kg**.
-- **Lead time médio** vs. SLA e atrasos.
-- Ranking de transportadoras por eficiência e custo.
-- Identificação de rotas críticas e produtos com baixa rentabilidade.
-- Simulação de cenários para decisões estratégicas.
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Python 3.12** – Manipulação e tratamento de dados.
-- **Pandas** – Limpeza, transformação e análise.
-- **MariaDB/Linux** – Base de dados central.
-- **SQLAlchemy** – Conexão e ETL em Python.
-- **Excel** – Receção de relatórios das transportadoras.
-- **Power BI** – Criação de dashboards e análise visual.
-- **Linux (VM)** – Ambiente de execução do pipeline.
-- **Apache** – Suporte à infraestrutura de dados.
+### 4️⃣ Visualização – Power BI
+- Conexão direta ao MariaDB  
+- Dashboards interativos por país e continente  
+- KPIs e gráficos de tendência:  
+  - Evolução diária e acumulada de casos e mortes  
+  - Comparação entre países e continentes  
+  - Casos normalizados por população  
+  - Alertas de crescimento rápido  
 
 ---
 
-## 🎯 Resultados Esperados
-
-- Dataset consolidado e limpo, pronto para análise em Power BI.
-- Insights claros sobre **margens, custos logísticos e eficiência das transportadoras**.
-- Dashboards estratégicos para tomada de decisão baseada em dados.
-- Demonstração prática de competências em:
-  - **Business Intelligence**
-  - **Engenharia de Dados**
-  - **SQL e Linux**
-  - **Preparação de dados para análise visual**
+## 📊 Tecnologias Utilizadas
+- **Python 3.12** – ETL e tratamento de dados  
+- **Pandas** – Limpeza, transformação e criação de métricas  
+- **SQL (MariaDB/Linux)** – Armazenamento estruturado e seguro  
+- **Power BI** – Visualização, dashboards e análise interativa  
+- **CSV oficial ECDC** – Fonte confiável e atualizada  
 
 ---
 
-📌 *Este projeto representa um pipeline completo de BI corporativo, desde extração e tratamento de dados até análise estratégica de logística e performance de vendas.*
+## 📝 Estrutura do Dataset
+| Coluna | Significado |
+|--------|------------|
+| `date_rep` | Data do relatório (YYYY-MM-DD) |
+| `cases` | Novos casos diários confirmados |
+| `deaths` | Novas mortes diárias |
+| `countries_and_territories` | Nome do país/território |
+| `country_territory_code` | Código ISO Alpha-3 do país |
+| `pop_data_2018` | População do país (2018) |
+| `continent_exp` | Continente do país |
+
+---
+
+## 💡 Resultados Esperados
+- Dataset consolidado, limpo e estruturado pronto para análise  
+- Métricas claras e dashboards interativos para monitorar a evolução da pandemia  
+- Possibilidade de comparar países, continentes e analisar tendências globais  
+
+---
+
+## 🚀 Como Executar
+1. Clonar o repositório:  
+```bash
+git clone https://github.com/seu-usuario/covid-global-dashboard.git
+
